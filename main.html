@@ -36,10 +36,11 @@ Tullostech@gmail.com
 	$.support.cors = true;
 
 //  // THIS IS JUST EXAMPLE CODE AND SOMETHING TO THINK ABOUT
-//  (function(){
+//  var BoundControls = (function(){
 //    var controls_p = BoundControls.prototype,
 //        room_p     = Room.prototype;
 //
+//    // For now Room is a "Private" Class (if Javascript had classes)
 //    function Room(data) {
 //      this.$el = $('#Volume' + room.name);
 //    }
@@ -52,11 +53,23 @@ Tullostech@gmail.com
 //      return this.$el.slider().val();
 //    }
 //
+//    room_p.type = function() {
+//      this.data.Type;
+//    }
+//
+//    room_p.id = function() {
+//      this.data.ID;
+//    }
+//
+//    room_p.slot = function() {
+//      this.data.Slot;
+//    }
+//
 //    room_p.send = function() {
 //      var data = {
-//        Type = this.Type,
-//        ID = this.ID,
-//        Slot = this.Slot,
+//        Type = this.type(),
+//        ID = this.id(),
+//        Slot = this.slot(),
 //        Value = this.sliderVal()
 //      };
 //
@@ -101,7 +114,7 @@ Tullostech@gmail.com
 //  })();
 //
 //  // Pass your stuff in here
-//  var boundControls = new BoundControls( {} );
+//  var boundControls = new BoundControls( /** YOUR OBJECT HERE **/ );
 
 	function BindVolumeControls(Room) {
 		$('#Volume'+Room.name).on('slidestop', function (event)
