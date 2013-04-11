@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<!--
+
+CrestJson 0.01 (pronounce like Crest-John)
+Beta Build
+
+This is an open source html5 configurable script that will allow Andriod devices, Windows ie Chrome/Firefox, Windows Phones, Mac (yuck), 
+and other compatible html5 devices access your crestron control system. This appliction uses a CrestJson server a a proxy 
+to communication with the actual devices via Json objects.
+
+Installation:  This is a single page application that can be installed on your creston device if it has a web server.  Assuming 
+its connected to the internet this is the only file that is needed.
+
+1.  Room names must be distinct and have not spaces, this goes for names in general not just specific to rooms
+2.
+
+
+Nick Tullos
+Tullostech@gmail.com
+-->
+
+  <head>
+  <title>Page Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
+	<script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.js"></script>
+
+<script>
+	//server configuration
+	//var URL = "http://192.168.1.149:8080/api/CrestJson";
+	var URL = "http://localhost:8080/api/CrestJson";
+
+	//support cross domain connections
+	$.support.cors = true;
+
+	function BindVolumeControls(Room) {
+		$('#Volume'+Room.name).on('slidestop', function (event)
+		{
+			defaultval = 0;
+			self = this;
+			var slider_value = $('#Volume' + Room.name).slider().val();
+			Send(Room.volume.id, Room.volume.type, 0, slider_value);
+		});
+	}
+
+	function BindControls(data) {
+		//bind each room's volume control
+		$.each(data.Rooms, function (intIndex, room) {
+			BindVolumeControls(room)
+		});
+
+	}
+
+    //Generate UI for rooms
+	function GenerateUIforRooms(data)
+	{
+		self = this;
+		self.CrestJsonData = data;
+		// Genarate power for the add power
+		$('#content').append(GenerateUISystemPowerButton(data.systempower.name));
+
+		//add each room
+		$.each(data.Rooms, function (intIndex, Room) {
+			AddNewRoom(Room);
+		});
+
+	}
+
+	function GenerateUISystemPowerButton(buttonname)
+	{
+	    return '<a href="#" data-role="button"  onclick="SendDigitalSystemPower() "> ' + buttonname + ' </a>';
+	}
+
+	function GenerateUICollapsable(name)
+	{
+	return '<div data-role="collapsible" data-theme="b"  data-collapsed="true" id = "' + name + '"><h3> ' + name + ' </h3><span></span></div>';
+	}
+
+	function GenerateUIDigalButton(roomname,id,buttonname)
+	{
+	return  '<a href="#" data-role="button"  onclick="SendDigital(\'' + roomname + '\',' + id + ') "> ' + buttonname + ' </a>';
+	}
+	
+	function GenerateUISlider(id,slidername) {
+		return '<label for="slider1">' + slidername + '<input type="range"  id=' + id + ' min="0" max="40000" value="0" data-popup-enabled="false" data-theme="d" >';
+	}
+
+	function AddNewRoom(Room) {
+		//1. Add ID to room list.
+		//2. InsertID into HTML Room
+		//3. Add Power Button
+		//4. Get SignalList and create source buttons
+		//5. Add Volume control
+		//6. Add Mute Button
+		//7. Refresh All New Content
+
+		var rm = GenerateUICollapsable(Room.name);
+		$('#content').append(rm);
+
+		$.each(Room.srclist,
+		function (intIndex, src) {
+			var btnsrc = GenerateUIDigalButton(Room.name, src.id, src.name);
+			$('#' + Room.name).append(btnsrc);
+		});
+
+		//wire up the volume control
+		volnamename = "Volume" + Room.name;
+		var volsrc = GenerateUISlider(volnamename, "Volume");
+		//add the volume control too the dynamic room panel
+		$('#' + Room.name).append(volsrc);
+
+	   
+	}
+
+	function SendDigitalSystemPower()
+	{
+	    var Button = this.CrestJsonData.systempower;
+	    UpdateDigitaleValue(Button);	            
+	}
+
+    //get previous value and send the opposite
+	function UpdateDigitaleValue(Button)
+	{
+
+	    if (Button.value == "true")
+	    {
+	        Button.value = "false";
+	    }
+	    else {
+	        Button.value = "true";
+	    }
+
+	    Send(Button.id, Button.type, Button.slot, Button.value);
+	}
+
+	//When digital since we are not receiving feedback in this version we must locally store the last value sent and swap so we can send true and false
+	function SendDigital(RoomName,ID)
+	{
+		self = this;
+		//loop through the rooms to find the room
+		//add each room
+		$.each(self.CrestJsonData.Rooms, function (intIndex, Room) {
+			var CurrentRoom = Room;
+			if (RoomName == Room.name)
+			{
+				$.each(CurrentRoom.srclist, function (index, Button) {
+					if (Button.id == ID) {					   
+					    UpdateDigitaleValue(Button);
+						return false;
+					}
+				});
+			}
+		});
+
+		}
+
+    //build data.. here is an example for analog,digital,serial
+    //{"Type":"A","ID":"6","Slot":"0","Value":"30000"}
+    //{"Type":"D","ID":"6","Slot":"0","Value":"false"}
+    //{"Type":"S","ID":"6","Slot":"0","Value":"nottested????"}
+	function Send(ID, Type, Slot, value) {	
+		var data = {};
+		data.Type = Type;
+		data.ID = ID
+		data.Slot = Slot;
+		data.Value = value;
+		//send call
+		$.ajax({
+			type: 'POST',
+			url: URL,
+			dataType: 'json',
+			data: data,
+			crossDomain: true,
+			success: function () {
+				//alert("Status: success");
+			},
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+				alert("Connection Error: " + errorThrown);
+			}
+
+		});
+
+	}
+
+	function CreateUI(data)
+	{
+        //Generate the UI Controls
+	    GenerateUIforRooms(data);
+		//update UI
+		$('#content').trigger("create");
+		//bind the volume sliders
+		BindControls(data);
+
+	}
+
+	$(function () {
+		//build the room list will come from the server when out of demo mode.. demo mode still works against a live server
+		//mock up Json objects and setup form based on data
+
+		var Data = {}
+		Data.systempower = { name: "Power", id: "9", type: "D", value: "true" ,slot:"0"};
+		Data.Rooms = [];
+		var Room = {}
+		Room.name = "Kitchen";        
+		Room.srclist =
+		[{ name: "Power", id: "9", type: "D", value: "true", slot: "0" },
+	     { name: "Mute", id: "3", type: "D", value: "true", slot: "0" },
+	    { name: "XBMC", id: "17", type: "D", value: "true", slot: "0" },
+		{ name: "Andriod", id: "18", type: "D", value: "true", slot: "0" },
+		{ name: "Zune", id: "19", type: "D", value: "true", slot: "0" },
+		{ name: "Shuffler", id: "20", type: "D", value: "true", slot: "0" }]
+	Room.volume =
+		{ name: "Volume", id: "1", type: "A", max: "45000", min: "0" }
+
+	Data.Rooms.push(Room);
+	
+	var Room2={}
+	Room2.name = "Library";
+	Room2.srclist = 
+		[{ name: "Power", id: "14", type: "D", value: "true", slot: "0" },
+	     { name: "Mute", id: "8", type: "D", value: "true", slot: "0" },
+	    { name: "XBMC", id: "42", type: "D", value: "true", slot: "0" },
+		{ name: "Andriod", id: "43", type: "D", value: "true", slot: "0" },
+		{ name: "Zune", id: "44", type: "D", value: "true", slot: "0" },
+		{ name: "Shuffler", id: "45", type: "D", value: "true", slot: "0" }]
+	Room2.volume =
+		{ name: "Volume", id: "6", type: "A", max: "45000", min: "0", slot: "0" }
+		//TODO later..
+	Data.Rooms.push(Room2);
+	var Room3 = {}
+	Room3.name = "Frontyard";
+	Room3.srclist = []
+	Room3.volume =
+		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0" }
+	Data.Rooms.push(Room3);    
+	var Room4 = {}
+	Room4.name = "Backyard";
+	Room4.srclist = [] 
+	Room4.volume =
+		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0" }
+	Data.Rooms.push(Room4);
+	var Room5 = {}
+	Room5.name ="Garage";
+	Room5.srclist = [] 
+	Room5.volume =
+		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" }
+	Data.Rooms.push(Room5);
+	var Room6={}
+	Room6.name = "Bathroom";
+	Room6.srclist = [] 
+	Room6.volume =
+		{ name: "Volume", id: "5", type: "A" , max:"45000", min:"0" }
+	Data.Rooms.push(Room6);
+
+
+	//create the UI from the Mock data
+	CreateUI(Data);
+
+	});
+
+  </script>	
+	
+<style type="text/css">
+	input.ui-slider-input {
+		display : none !important;
+	}
+</style>
+	
+	</head>
+  
+  <body>
+<!-- Home -->
+<div data-role="page" id="page1">
+	<div id="Header" data-theme="a" data-role="header">
+		<h4>
+			Welcome
+		</h4>
+	</div>
+	<div data-role="content" id ="content">
+		
+	</div>
+</div>
+	  </body>
+	</html>
