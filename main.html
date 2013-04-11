@@ -5,11 +5,11 @@
 CrestJson 0.01 (pronounce like Crest-John)
 Beta Build
 
-This is an open source html5 configurable script that will allow Andriod devices, Windows ie Chrome/Firefox, Windows Phones, Mac (yuck), 
-and other compatible html5 devices access your crestron control system. This appliction uses a CrestJson server a a proxy 
+This is an open source html5 configurable script that will allow Andriod devices, Windows ie Chrome/Firefox, Windows Phones, Mac (yuck),
+and other compatible html5 devices access your crestron control system. This appliction uses a CrestJson server a a proxy
 to communication with the actual devices via Json objects.
 
-Installation:  This is a single page application that can be installed on your creston device if it has a web server.  Assuming 
+Installation:  This is a single page application that can be installed on your creston device if it has a web server.  Assuming
 its connected to the internet this is the only file that is needed.
 
 1.  Room names must be distinct and have not spaces, this goes for names in general not just specific to rooms
@@ -34,6 +34,87 @@ Tullostech@gmail.com
 
 	//support cross domain connections
 	$.support.cors = true;
+
+//  // THIS IS JUST EXAMPLE CODE AND SOMETHING TO THINK ABOUT
+//  var BoundControls = (function(){
+//    var controls_p = BoundControls.prototype,
+//        room_p     = Room.prototype;
+//
+//    // For now Room is a "Private" Class (if Javascript had classes)
+//    function Room(data) {
+//      this.$el = $('#Volume' + room.name);
+//    }
+//
+//    room_p.on = function(selector, callback) {
+//      this.$el.on.call(this, selector, callback);
+//    }
+//
+//    room_p.sliderVal = function() {
+//      return this.$el.slider().val();
+//    }
+//
+//    room_p.type = function() {
+//      this.data.Type;
+//    }
+//
+//    room_p.id = function() {
+//      this.data.ID;
+//    }
+//
+//    room_p.slot = function() {
+//      this.data.Slot;
+//    }
+//
+//    room_p.send = function() {
+//      var data = {
+//        Type = this.type(),
+//        ID = this.id(),
+//        Slot = this.slot(),
+//        Value = this.sliderVal()
+//      };
+//
+//      //send call
+//      $.ajax({
+//        type: 'POST',
+//        url: URL,
+//        dataType: 'json',
+//        data: data,
+//        crossDomain: true,
+//        success: function () {
+//          //alert("Status: success");
+//        },
+//        error: function (XMLHttpRequest, textStatus, errorThrown) {
+//          alert("Connection Error: " + errorThrown);
+//        }
+//      });
+//
+//    }
+//
+//    function BoundControls(data) {
+//      this.bindData(data)
+//    }
+//
+//    controls_p.bindData = function (data) {
+//      var self = this;
+//      $.each(data.Rooms, function (intIndex, room) {
+//        self.bindVolumControl(room)
+//      });
+//    }
+//
+//    controls_p.bindVolumControl = function(room) {
+//      var room = new Room(room);
+//
+//      // `this` inside the callback will be room :)
+//      room.on('slidestop', function (event) {
+//        this.send();
+//      });
+//    }
+//
+//    return BoundControls;
+//  })();
+//
+//  // Pass your stuff in here
+//  var boundControls = new BoundControls( /** YOUR OBJECT HERE **/ );
 
 	function BindVolumeControls(Room) {
 		$('#Volume'+Room.name).on('slidestop', function (event)
@@ -82,7 +163,7 @@ Tullostech@gmail.com
 	{
 	return  '<a href="#" data-role="button"  onclick="SendDigital(\'' + roomname + '\',' + id + ') "> ' + buttonname + ' </a>';
 	}
-	
+
 	function GenerateUISlider(id,slidername) {
 		return '<label for="slider1">' + slidername + '<input type="range"  id=' + id + ' min="0" max="40000" value="0" data-popup-enabled="false" data-theme="d" >';
 	}
@@ -111,13 +192,13 @@ Tullostech@gmail.com
 		//add the volume control too the dynamic room panel
 		$('#' + Room.name).append(volsrc);
 
-	   
+
 	}
 
 	function SendDigitalSystemPower()
 	{
 	    var Button = this.CrestJsonData.systempower;
-	    UpdateDigitaleValue(Button);	            
+	    UpdateDigitaleValue(Button);
 	}
 
     //get previous value and send the opposite
@@ -146,7 +227,7 @@ Tullostech@gmail.com
 			if (RoomName == Room.name)
 			{
 				$.each(CurrentRoom.srclist, function (index, Button) {
-					if (Button.id == ID) {					   
+					if (Button.id == ID) {
 					    UpdateDigitaleValue(Button);
 						return false;
 					}
@@ -160,7 +241,7 @@ Tullostech@gmail.com
     //{"Type":"A","ID":"6","Slot":"0","Value":"30000"}
     //{"Type":"D","ID":"6","Slot":"0","Value":"false"}
     //{"Type":"S","ID":"6","Slot":"0","Value":"nottested????"}
-	function Send(ID, Type, Slot, value) {	
+	function Send(ID, Type, Slot, value) {
 		var data = {};
 		data.Type = Type;
 		data.ID = ID
@@ -203,7 +284,7 @@ Tullostech@gmail.com
 		Data.systempower = { name: "Power", id: "9", type: "D", value: "true" ,slot:"0"};
 		Data.Rooms = [];
 		var Room = {}
-		Room.name = "Kitchen";        
+		Room.name = "Kitchen";
 		Room.srclist =
 		[{ name: "Power", id: "9", type: "D", value: "true", slot: "0" },
 	     { name: "Mute", id: "3", type: "D", value: "true", slot: "0" },
@@ -215,10 +296,10 @@ Tullostech@gmail.com
 		{ name: "Volume", id: "1", type: "A", max: "45000", min: "0" }
 
 	Data.Rooms.push(Room);
-	
+
 	var Room2={}
 	Room2.name = "Library";
-	Room2.srclist = 
+	Room2.srclist =
 		[{ name: "Power", id: "14", type: "D", value: "true", slot: "0" },
 	     { name: "Mute", id: "8", type: "D", value: "true", slot: "0" },
 	    { name: "XBMC", id: "42", type: "D", value: "true", slot: "0" },
@@ -234,22 +315,22 @@ Tullostech@gmail.com
 	Room3.srclist = []
 	Room3.volume =
 		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0" }
-	Data.Rooms.push(Room3);    
+	Data.Rooms.push(Room3);
 	var Room4 = {}
 	Room4.name = "Backyard";
-	Room4.srclist = [] 
+	Room4.srclist = []
 	Room4.volume =
 		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0" }
 	Data.Rooms.push(Room4);
 	var Room5 = {}
 	Room5.name ="Garage";
-	Room5.srclist = [] 
+	Room5.srclist = []
 	Room5.volume =
 		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" }
 	Data.Rooms.push(Room5);
 	var Room6={}
 	Room6.name = "Bathroom";
-	Room6.srclist = [] 
+	Room6.srclist = []
 	Room6.volume =
 		{ name: "Volume", id: "5", type: "A" , max:"45000", min:"0" }
 	Data.Rooms.push(Room6);
@@ -260,16 +341,16 @@ Tullostech@gmail.com
 
 	});
 
-  </script>	
-	
+  </script>
+
 <style type="text/css">
 	input.ui-slider-input {
 		display : none !important;
 	}
 </style>
-	
+
 	</head>
-  
+
   <body>
 <!-- Home -->
 <div data-role="page" id="page1">
@@ -279,7 +360,7 @@ Tullostech@gmail.com
 		</h4>
 	</div>
 	<div data-role="content" id ="content">
-		
+
 	</div>
 </div>
 	  </body>
