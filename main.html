@@ -46,7 +46,7 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
         *
         */
 	    var Data = {}
-	    Data.systempower = { name: "Power", id: "9", type: "D", value: "true", slot: "0" };
+	    Data.systempower = { name: "Power", id: "15", type: "D", value: "true", slot: "0" };
 	    Data.systemsources = { name: "All", systemsrc: [{ name: "Mute" }, { name: "XBMC" }, { name: "Android" }, { name: "Zune" }, { name: "Shuffler" }] };
 	    Data.Rooms = [];
 	    var Room = {}
@@ -64,7 +64,8 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 	    Data.Rooms.push(Room);
 	    var Room2 = {}
 	    Room2.name = "Library";
-	    Room2.srclist = [{ name: "Power", id: "14", type: "D", value: "true", slot: "0", source: "false" },
+	    Room2.srclist = 
+		[{ name: "Power", id: "14", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "Mute", id: "8", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "XBMC", id: "42", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Android", id: "43", type: "D", value: "true", slot: "0", source: "true" },
@@ -72,29 +73,52 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 		{ name: "Shuffler", id: "45", type: "D", value: "true", slot: "0", source: "true" }]
 	    Room2.volume =
 		{ name: "Volume", id: "6", type: "A", max: "45000", min: "0", slot: "0" }
-	    //TODO finish the rest of these rooms later
 	    Data.Rooms.push(Room2);
 	    var Room3 = {}
 	    Room3.name = "Frontyard";
-	    Room3.srclist = []
+	    Room3.srclist = 
+		[{ name: "Power", id: "11", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "Mute", id: "5", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "XBMC", id: "27", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Android", id: "28", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Zune", id: "29", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Shuffler", id: "30", type: "D", value: "true", slot: "0", source: "true" }];
 	    Room3.volume =
 		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room3);
 	    var Room4 = {}
 	    Room4.name = "Backyard";
-	    Room4.srclist = []
+	    Room4.srclist = 
+		[{ name: "Power", id: "10", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "Mute", id: "1", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "XBMC", id: "22", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Android", id: "23", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Zune", id: "24", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Shuffler", id: "25", type: "D", value: "true", slot: "0", source: "true" }];
 	    Room4.volume =
 		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room4);
 	    var Room5 = {}
 	    Room5.name = "Garage";
-	    Room5.srclist = []
+	    Room5.srclist = 
+		[{ name: "Power", id: "12", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "Mute", id: "6", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "XBMC", id: "32", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Android", id: "33", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Zune", id: "34", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Shuffler", id: "35", type: "D", value: "true", slot: "0", source: "true" }];
 	    Room5.volume =
 		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room5);
 	    var Room6 = {}
 	    Room6.name = "Bathroom";
-	    Room6.srclist = []
+	    Room6.srclist = 
+		[{ name: "Power", id: "13", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "Mute", id: "7", type: "D", value: "true", slot: "0", source: "false" },
+		{ name: "XBMC", id: "37", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Android", id: "38", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Zune", id: "39", type: "D", value: "true", slot: "0", source: "true" },
+		{ name: "Shuffler", id: "40", type: "D", value: "true", slot: "0", source: "true" }];
 	    Room6.volume =
 		{ name: "Volume", id: "5", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room6);
@@ -108,6 +132,9 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 	});
 
 
+	//default connection status
+	self.connection = false;
+	
 	//support cross domain connections
 	$.support.cors = true;
 
@@ -175,7 +202,7 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 
 		return '<a href="#" data-role="button" onclick="SendPartySrc(\'' + button.name + '\') "> ' + button.name + ' </a>';
 	}
-	
+		
 	function GenerateUISystemPowerButton(buttonname)
 	{
 		return '<a href="#" data-role="button"  onclick="SendDigitalSystemPower() "> ' + buttonname + ' </a>';
@@ -332,6 +359,17 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 		});
 
 	}
+	
+	//checks the status of the server
+	function SendPing()
+	{
+	Send("D", "-1","0", "true");
+	}
+	
+	function DisplayStatus(msg)
+	{
+	$("#statusmsg").text(msg);
+	}
 
 	//build data.. here is an example for analog,digital,serial
 	//{"Type":"A","ID":"6","Slot":"0","Value":"30000"}
@@ -345,6 +383,7 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 		data.Value = value;
 		//send call
 		$.ajax({
+			self:this,
 			type: 'POST',
 			url: URL,
 			dataType: 'json',
@@ -352,9 +391,16 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 			crossDomain: true,
 			success: function () {
 				//alert("Status: success");
+				self.connection = true;
+				DisplayStatus("Status:  Connected");				
 			},
 			error: function (XMLHttpRequest, textStatus, errorThrown) {
-				alert("Connection Error:  Is the API server turned  with IP " + URL);
+			DisplayStatus("Status: Connection Error");				
+				if (self.connection != false)
+				{
+				alert("Connection Error:  Is the Web API controller running at IP ?" + URL);
+				self.connection = false;
+				}
 			}
 
 		});
@@ -362,8 +408,10 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 	}
 
 	function CreateUI(data)
-	{
-
+	{ 
+   
+		//Lets go ahead and try to connect to the server
+		SendPing();
 		//Generate the UI Controls	    
 		GenerateUIforRooms(data);
 		//update UI
@@ -372,6 +420,7 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 		BindControls(data);
 
 	}
+
 
 	
 
@@ -386,13 +435,23 @@ display : none !important;
   <body>
 <!-- Home -->
 <div data-role="page" id="page1">
-<div id="Header" data-theme="a" data-role="header">
-<h4>
-Welcome
-</h4>
-</div>
-<div data-role="content" id ="content">
+	<div id="Header" data-theme="a" data-role="header">
+				<h4>
+				Welcome:
+				</h4>
+	</div>
+	
+	<div data-role="content" id ="content">
+	
+	</div>
+	
+	<div id="footer" data-theme="a" data-role="footer" data-position="fixed">
+				<h3>
+				<div id = "statusmsg">
+					Status:
+					</div>
+				</h3>
+    </div>
  </div>
-</div>
   </body>
 </html>
