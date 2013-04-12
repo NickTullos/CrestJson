@@ -8,6 +8,9 @@ This is an open source html5 configurable script that will allow Andriod devices
 and other compatible html5 devices access your crestron control system. This appliction uses a CrestJson server a proxy 
 to communication with the actual devices via Json objects.
 
+Video
+============
+http://youtu.be/zOhOEWoED4M
 
 Release Notes
 =============
