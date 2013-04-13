@@ -34,8 +34,11 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 
 <script>
 	//server configuration
-	//var URL = "http://192.168.1.149:8080/api/CrestJson";
-	var URL = "http://localhost:8080/api/CrestJson";
+	var URL = "http://192.168.0.12:8080/api/CrestJson";
+	//var URL = "http://localhost:8080/api/CrestJson";
+  
+  //client config
+  var Collapse = true; // collapse all panels 1 minutes after the last call and other automatic collapsing features.
 
 	$(function () {
 	    //build the room list will come from the server when out of demo mode.. demo mode still works against a live server
@@ -134,7 +137,8 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 
 	//default connection status
 	self.connection = false;
-	
+	self.tryingtocollaspe = false; //is the timer running that will collapse all panels
+  
 	//support cross domain connections
 	$.support.cors = true;
 
@@ -320,6 +324,17 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 	
 	}
 
+//
+// this function will close all the panels after two minutes of the last send commmand
+//
+function collapseAll(){
+	$("div[data-role='collapsible']").each(function() {
+	        var coll = $(this);
+	        coll.trigger('collapse');
+	    });
+}
+
+
 	//
 	// this function will turn all all source include the one requested to be turned on, then pulse low/high to the requested button
 	//
@@ -401,14 +416,60 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 				alert("Connection Error:  Is the Web API controller running at IP ?" + URL);
 				self.connection = false;
 				}
-			}
+			},
+      complete: function()
+      {
+      if (this.Collapse == true)
+      {
+      /*
+      1. create unique ID
+      2. set a the globle ID 
+      3. when timeout expires see if that ID is yours, if not then your not the last call .. ignore the collapse
+          */
+         //this has problems that can be fix with the above psudo code 
+         setTimeout(function()
+          {
+          collapseAll()
+          }
+          ,1000*60*5);
+
+      }
+      }
 
 		});
 
 	}
 
-	function CreateUI(data)
-	{ 
+//
+// this function will automatically collapse all other panels and scroll the active panel to the top
+//
+function BindAutoCollaspeAndScroll()
+{
+	if (this.Collapse == true)
+	{
+	    var $collapse = $("div[data-role='collapsible']")
+	    
+	    $collapse.bind('expand', function () 
+	    {
+	     $collapse.not(this).trigger('collapse');
+	     $('html, body').animate({
+	     scrollTop: $(this).offset().top
+	     });
+	    });
+	}
+}
+
+
+
+$(document).delegate('#my-page-id', 'pageinit', function () {
+/*
+  */  
+    });
+
+function CreateUI(data)
+	{
+  
+    
    
 		//Lets go ahead and try to connect to the server
 		SendPing();
@@ -418,7 +479,11 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 		$('#content').trigger("create");
 		//bind the volume sliders
 		BindControls(data);
-
+    collapseAll();
+    BindAutoCollaspeAndScroll();
+    
+    Aut
+    
 	}
 
 
@@ -443,7 +508,7 @@ display : none !important;
 	
 	<div data-role="content" id ="content">
 	
-	</div>
+  </div>
 	
 	<div id="footer" data-theme="a" data-role="footer" data-position="fixed">
 				<h3>
@@ -452,6 +517,6 @@ display : none !important;
 					</div>
 				</h3>
     </div>
- </div>
+ 	</div>
   </body>
 </html>
