@@ -27,10 +27,10 @@ Tullostech@gmail.com
   <head>
   <title>CrestJson 0.0a 2013/04/10</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="
-http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.css" />
 <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
-<script src="http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.js"></script>
+    
 
 <script>
 	//server configuration
@@ -328,10 +328,11 @@ http://code.jquery.com/mobile/1.2.1/jquery.mobile-1.2.1.min.css" />
 // this function will close all the panels after two minutes of the last send commmand
 //
 function collapseAll(){
-	$("div[data-role='collapsible']").each(function() {
-	        var coll = $(this);
-	        coll.trigger('collapse');
-	    });
+
+$("div[data-role='collapsible']").each(function() {
+        var coll = $(this);
+        coll.trigger('collapse');
+    });
 }
 
 
@@ -445,18 +446,18 @@ function collapseAll(){
 //
 function BindAutoCollaspeAndScroll()
 {
-	if (this.Collapse == true)
-	{
-	    var $collapse = $("div[data-role='collapsible']")
-	    
-	    $collapse.bind('expand', function () 
-	    {
-	     $collapse.not(this).trigger('collapse');
-	     $('html, body').animate({
-	     scrollTop: $(this).offset().top
-	     });
-	    });
-	}
+if (this.Collapse == true)
+{
+    var $collapse = $("div[data-role='collapsible']")
+    
+    $collapse.bind('expand', function () 
+    {
+     $collapse.not(this).trigger('collapse');
+     $('html, body').animate({
+     scrollTop: $(this).offset().top
+     });
+    });
+}
 }
 
 
@@ -517,6 +518,6 @@ display : none !important;
 					</div>
 				</h3>
     </div>
- 	</div>
+ </div>
   </body>
 </html>
