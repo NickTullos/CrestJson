@@ -34,8 +34,8 @@ Tullostech@gmail.com
 
 <script>
 	//Proxy server configuration, this proxy should be switch to directly connecting with Crestron control system..
-	var HOST = "http://localhost:8080";
-	//var HOST = "http://192.168.0.12:8080";
+	//var HOST = "http://localhost:8080";
+	var HOST = "http://192.168.0.12:8080";
 	var URL = HOST + "/api/CrestJson";
 	var URLXBMC = HOST +"/api/xbmc/";   //must have trailing slash
 	var XBMCINFOREFRESH = 1000; // how fast the information from xbmc refreshes
@@ -565,8 +565,10 @@ function GetPosition()
 	{
 	 	if (data != null)
 			{
-			var status = "Status: Stopped";
-			var position = "Position:  Unknown"
+			var status = "Status: Loading";
+			var position = "Position:  Loading";
+			if (data.result != null)
+			{
 			if (data.result.speed == 1)
 			{
 			if ($("#status").text() == "Status:  Playing")
@@ -576,19 +578,29 @@ function GetPosition()
 			}
 			
 			if (data.result.time != null)
-				position =  "Position:  "+data.result.time.minutes + ":" + data.result.time.seconds + " / " +data.result.totaltime.minutes+":"+data.result.totaltime.seconds
-
+			{	var secondspos = data.result.time.seconds 
+				var secondstotal =data.result.totaltime.seconds
+				if (secondspos < 10) {secondspos = "0"+secondspos;}
+				if (secondstotal < 10) {secondstotal = "0"+secondstotal;}
+				position =  "Position:  "+data.result.time.minutes + ":" + secondspos + " / " +data.result.totaltime.minutes+":"+secondstotal
+				}
+			}
 			$("#position").text(position);
 			$("#status").text(status);
 			}
-		//on success we update again.. once the new timer expires			
-		 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
 	
 	},//on error callback
 	function()
 	{		$("#artist").text("Artist: N/A");
 			$("#title").text("Title: N/A");
-	}	); //END of  GetXBMC info call
+	},//on completed
+	function()
+	{
+			//on complete we update again.. once the new timer expires			
+		 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
+
+	}
+	); //END of  GetXBMC info call
 
 }
 
@@ -651,7 +663,7 @@ function GenerateXBMCButton(name,action)
 	
 	}
 	
-	function GetXBMC(command,onSuccess,onError) {
+	function GetXBMC(command,onSuccess,onError,onComplete) {
 		$.ajax({
 			self:this,
 			type: 'GET',
@@ -681,7 +693,14 @@ function GenerateXBMCButton(name,action)
 					if (onError !=null)
 						onError();
 
+			},
+			complete:function()
+			{
+					if (onComplete !=null)
+						onComplete();
+
 			}
+			
 			})
 			}
 	
