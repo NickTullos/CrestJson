@@ -2,7 +2,7 @@
 <html>
 <!--
 
-CrestJson 0.01 (pronounce like Crest-John)
+CrestJson 0.02 (pronounce like Crest-John)
 Beta Build
 
 This is an open source html5 configurable script that will allow Andriod
@@ -33,9 +33,12 @@ Tullostech@gmail.com
     
 
 <script>
-	//server configuration
-	var URL = "http://192.168.0.12:8080/api/CrestJson";
-	//var URL = "http://localhost:8080/api/CrestJson";
+	//Proxy server configuration, this proxy should be switch to directly connecting with Crestron control system..
+	var HOST = "http://localhost:8080";
+	//var HOST = "http://192.168.0.12:8080";
+	var URL = HOST + "/api/CrestJson";
+	var URLXBMC = HOST +"/api/xbmc/";   //must have trailing slash
+	var XBMCINFOREFRESH = 3000; // how fast the information from xbmc refreshes
   
   //client config
   var Collapse = true; // collapse all panels 1 minutes after the last call and other automatic collapsing features.
@@ -49,18 +52,19 @@ Tullostech@gmail.com
         *
         */
 	    var Data = {}
-	    Data.systempower = { name: "Power", id: "15", type: "D", value: "true", slot: "0" };
+	    Data.systempower = { name: "Power Off", id: "15", type: "D", value: "true", slot: "0" };
 	    Data.systemsources = { name: "All", systemsrc: [{ name: "Mute" }, { name: "XBMC" }, { name: "Android" }, { name: "Zune" }, { name: "Shuffler" }] };
 	    Data.Rooms = [];
 	    var Room = {}
 	    Room.name = "Kitchen";
 	    Room.srclist =
-		[{ name: "Power", id: "9", type: "D", value: "true", slot: "0", source: "false" },
+		[
 		{ name: "Mute", id: "3", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "XBMC", id: "17", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Android", id: "18", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "19", type: "D", value: "true", slot: "0", source: "true" },
-		{ name: "Shuffler", id: "20", type: "D", value: "true", slot: "0", source: "true" }]
+		{ name: "Shuffler", id: "20", type: "D", value: "true", slot: "0", source: "true" },
+    {name: "Power Off", id: "9", type: "D", value: "true", slot: "0", source: "false" }]
 	    Room.volume =
 		{ name: "Volume", id: "1", type: "A", max: "45000", min: "0" }
 
@@ -68,60 +72,65 @@ Tullostech@gmail.com
 	    var Room2 = {}
 	    Room2.name = "Library";
 	    Room2.srclist = 
-		[{ name: "Power", id: "14", type: "D", value: "true", slot: "0", source: "false" },
+		[
 		{ name: "Mute", id: "8", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "XBMC", id: "42", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Android", id: "43", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "44", type: "D", value: "true", slot: "0", source: "true" },
-		{ name: "Shuffler", id: "45", type: "D", value: "true", slot: "0", source: "true" }]
+		{ name: "Shuffler", id: "45", type: "D", value: "true", slot: "0", source: "true" },
+    { name: "Power Off", id: "14", type: "D", value: "true", slot: "0", source: "false" }]
 	    Room2.volume =
 		{ name: "Volume", id: "6", type: "A", max: "45000", min: "0", slot: "0" }
 	    Data.Rooms.push(Room2);
 	    var Room3 = {}
 	    Room3.name = "Frontyard";
 	    Room3.srclist = 
-		[{ name: "Power", id: "11", type: "D", value: "true", slot: "0", source: "false" },
+		[
 		{ name: "Mute", id: "5", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "XBMC", id: "27", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Android", id: "28", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "29", type: "D", value: "true", slot: "0", source: "true" },
-		{ name: "Shuffler", id: "30", type: "D", value: "true", slot: "0", source: "true" }];
+		{ name: "Shuffler", id: "30", type: "D", value: "true", slot: "0", source: "true" },
+    { name: "Power", id: "11", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room3.volume =
 		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room3);
 	    var Room4 = {}
 	    Room4.name = "Backyard";
 	    Room4.srclist = 
-		[{ name: "Power", id: "10", type: "D", value: "true", slot: "0", source: "false" },
+		[
 		{ name: "Mute", id: "1", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "XBMC", id: "22", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Android", id: "23", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "24", type: "D", value: "true", slot: "0", source: "true" },
-		{ name: "Shuffler", id: "25", type: "D", value: "true", slot: "0", source: "true" }];
+		{ name: "Shuffler", id: "25", type: "D", value: "true", slot: "0", source: "true" },
+    { name: "Power", id: "10", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room4.volume =
 		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room4);
 	    var Room5 = {}
 	    Room5.name = "Garage";
 	    Room5.srclist = 
-		[{ name: "Power", id: "12", type: "D", value: "true", slot: "0", source: "false" },
+		[
 		{ name: "Mute", id: "6", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "XBMC", id: "32", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Android", id: "33", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "34", type: "D", value: "true", slot: "0", source: "true" },
-		{ name: "Shuffler", id: "35", type: "D", value: "true", slot: "0", source: "true" }];
+		{ name: "Shuffler", id: "35", type: "D", value: "true", slot: "0", source: "true" },
+    { name: "Power", id: "12", type: "D", value: "true", slot: "0", source: "false" },];
 	    Room5.volume =
 		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room5);
 	    var Room6 = {}
 	    Room6.name = "Bathroom";
 	    Room6.srclist = 
-		[{ name: "Power", id: "13", type: "D", value: "true", slot: "0", source: "false" },
+		[
 		{ name: "Mute", id: "7", type: "D", value: "true", slot: "0", source: "false" },
 		{ name: "XBMC", id: "37", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Android", id: "38", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "39", type: "D", value: "true", slot: "0", source: "true" },
-		{ name: "Shuffler", id: "40", type: "D", value: "true", slot: "0", source: "true" }];
+		{ name: "Shuffler", id: "40", type: "D", value: "true", slot: "0", source: "true" },
+    { name: "Power", id: "13", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room6.volume =
 		{ name: "Volume", id: "5", type: "A", max: "45000", min: "0" }
 	    Data.Rooms.push(Room6);
@@ -160,6 +169,12 @@ Tullostech@gmail.com
 
 	}
 
+	function GenerateTextPanel(name,id)
+	{
+ return '<h4 id =\'' + id + '\' >'+name+' </h4>';
+	}
+
+	
 	//Generate UI for rooms
 	function GenerateUIforRooms(data)
 	{
@@ -169,6 +184,8 @@ Tullostech@gmail.com
 		$('#content').append(GenerateUISystemPowerButton(data.systempower.name));
 		//generate UI for party buttons
 		GenerateUIforPartyButton(data.systemsources);
+		//add XBMC UI
+		CreateXBMC();
 		//add each room
 		$.each(data.Rooms, function (intIndex, Room) {
 			AddNewRoom(Room);
@@ -203,13 +220,12 @@ Tullostech@gmail.com
 
 	function GenerateUISystemPartyButton(button)
 	{
-
-		return '<a href="#" data-role="button" onclick="SendPartySrc(\'' + button.name + '\') "> ' + button.name + ' </a>';
+		return '<a href="#" data-role="button" onclick="SendPartySrc(\'' + button.name + '\')" data-icon="home" > ' + button.name + ' </a>';
 	}
 		
 	function GenerateUISystemPowerButton(buttonname)
 	{
-		return '<a href="#" data-role="button"  onclick="SendDigitalSystemPower() "> ' + buttonname + ' </a>';
+		return '<a href="#" data-role="button"  onclick="SendDigitalSystemPower()"  data-icon="delete" > ' + buttonname + ' </a>';
 	}
 
 	function GenerateUICollapsable(name)
@@ -219,7 +235,7 @@ Tullostech@gmail.com
 
 	function GenerateUIDigalButton(roomname,id,buttonname)
 	{
-		return  '<a href="#" data-role="button"  onclick="SendDigital(\'' + roomname + '\',' + id + ') "> ' + buttonname + ' </a>';
+		return  '<a href="#" data-role="button"  onclick="SendDigital(\'' + roomname + '\',' + id + ')" > ' + buttonname + ' </a>';
 	}
 	function GenerateUISlider(HTMLID, button) {
 		return '<label for="slider1">' + button.name + '<input type="range"  id=' + HTMLID + ' min="0" max=\'' + button.max + '\' value="0" data-popup-enabled="false"   data-theme="d" >';
@@ -441,6 +457,9 @@ $("div[data-role='collapsible']").each(function() {
 
 	}
 
+	
+	
+	
 //
 // this function will automatically collapse all other panels and scroll the active panel to the top
 //
@@ -483,9 +502,130 @@ function CreateUI(data)
     collapseAll();
     BindAutoCollaspeAndScroll();
     
-    Aut
+    
     
 	}
+
+	
+	/*****************************************/
+	//XBMC code below
+	//****************************************/
+
+self.updatexbmcinfo = false;
+//
+// this function will bind XBMC timer to pull info, only when xbmc is open
+//
+function BindAutoCollaspeAndScroll()
+{
+if (this.Collapse == true)
+{
+    var $collapse = $("#XBMC")
+    
+    $collapse.bind('expand', function () 
+    {
+	updatexbmcinfo = true;
+	autoupdateinfo();
+    });
+	$collapse.bind('collapse', function () 
+    {
+	updatexbmcinfo = false;
+    });
+	
+}
+}
+
+
+function autoupdateinfo()
+{
+if (updatexbmcinfo == true)
+{
+	//pass in a callback function
+	GetXBMC("info",
+	function()
+	{
+	//on success we update again..
+	 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
+	}
+	);
+	
+
+}
+else
+{
+	$("#artist").text("Artist: N/A");
+	$("#title").text("Title: N/A");
+
+}
+
+
+
+
+
+}
+
+	
+function GenerateXBMCButton(name,action)
+	{
+	
+		return '<a href="#" data-role="button" data-transition="pop" data-theme="a"  onclick="GetXBMC(\'' + action + '\')" data-icon="" > ' + name + ' </a>';
+	}
+
+	self.XBMC = {};
+
+	function CreateXBMC()
+	{
+			
+	xbmc = GenerateUICollapsable("XBMC")
+	$('#content').append(xbmc);
+	btn =  GenerateXBMCButton("Play/Pause","playpause");
+	$('#XBMC').append(btn);
+	btn =  GenerateXBMCButton("Next","next");
+	$('#XBMC').append(btn);
+	pnl =GenerateTextPanel("Artist: N/A","artist");
+	$('#XBMC').append(pnl);
+	pnl =GenerateTextPanel("Title: N/A","title");
+	$('#XBMC').append(pnl);
+
+	
+	}
+	
+	function GetXBMC(command,callback) {
+		$.ajax({
+			self:this,
+			type: 'GET',
+			url: URLXBMC + command,
+			dataType: 'json',
+			crossDomain: true,
+			success: function (data) {
+				self.connection = true;
+				DisplayStatus("Status:  Connected");				
+				if (command == "info")
+				{
+					XBMC.info = data;
+					if (data != null)
+					{
+					$("#artist").text("Artist: "+data.result.item.artist);
+					$("#title").text("Title: "+data.result.item.title);
+					}
+					if (callback !=null)
+						callback();
+
+					
+				}
+				
+			
+			},
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+			    DisplayStatus("Status: XBMC Connection Error");				
+				if (self.connection != false)
+				{
+				alert("Connection Error:  Is the Web API controller running at IP ?" + URLXBMC);
+				self.connection = false;
+				};
+			}
+			})
+			}
+	
 
 
 	
