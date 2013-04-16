@@ -38,7 +38,7 @@ Tullostech@gmail.com
 	//var HOST = "http://192.168.0.12:8080";
 	var URL = HOST + "/api/CrestJson";
 	var URLXBMC = HOST +"/api/xbmc/";   //must have trailing slash
-	var XBMCINFOREFRESH = 3000; // how fast the information from xbmc refreshes
+	var XBMCINFOREFRESH = 1000; // how fast the information from xbmc refreshes
   
   //client config
   var Collapse = true; // collapse all panels 1 minutes after the last call and other automatic collapsing features.
@@ -501,7 +501,7 @@ function CreateUI(data)
 		BindControls(data);
     collapseAll();
     BindAutoCollaspeAndScroll();
-    
+    BindAutoCollaspeAndScrollXBMX();
     
     
 	}
@@ -515,7 +515,7 @@ self.updatexbmcinfo = false;
 //
 // this function will bind XBMC timer to pull info, only when xbmc is open
 //
-function BindAutoCollaspeAndScroll()
+function BindAutoCollaspeAndScrollXBMX()
 {
 if (this.Collapse == true)
 {
@@ -534,27 +534,83 @@ if (this.Collapse == true)
 }
 }
 
+function GetInfo()
+{
+	//Get song Info
+	//pass in a callbacks function
+	GetXBMC("info",
+	function(data) //on success callback
+	{
+	 	if (data != null)
+			{
+			$("#artist").text("Artist: "+data.result.item.artist);
+			$("#title").text("Title: "+data.result.item.title);
+			}
+		//on success we update again.. once the new timer expires			
+//		 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
+	
+	},//on error callback
+	function()
+	{		$("#artist").text("Artist: N/A");
+			$("#title").text("Title: N/A");
+	}	); //END of  GetXBMC info call
+
+}
+
+function GetPosition()
+{
+	//Get Song Position
+	GetXBMC("status",
+	function(data) //on success callback
+	{
+	 	if (data != null)
+			{
+			var status = "Status: Stopped";
+			var position = "Position:  Unknown"
+			if (data.result.speed == 1)
+			{
+			if ($("#status").text() == "Status:  Playing")
+				status = "Status:  Playing.";
+				else
+				status = "Status:  Playing";
+			}
+			
+			if (data.result.time != null)
+				position =  "Position:  "+data.result.time.minutes + ":" + data.result.time.seconds + " / " +data.result.totaltime.minutes+":"+data.result.totaltime.seconds
+
+			$("#position").text(position);
+			$("#status").text(status);
+			}
+		//on success we update again.. once the new timer expires			
+		 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
+	
+	},//on error callback
+	function()
+	{		$("#artist").text("Artist: N/A");
+			$("#title").text("Title: N/A");
+	}	); //END of  GetXBMC info call
+
+}
+
 
 function autoupdateinfo()
 {
 if (updatexbmcinfo == true)
 {
-	//pass in a callback function
-	GetXBMC("info",
-	function()
-	{
-	//on success we update again..
-	 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
-	}
-	);
-	
 
+GetInfo();
+GetPosition(); // GetPosition function has a timer that will continue getting updates
+	
 }
+
+
 else
-{
+{//set everygthing as empty..
 	$("#artist").text("Artist: N/A");
 	$("#title").text("Title: N/A");
-
+	$("#position").text("Position: N/A");
+	$("#status").text("Status: N/A");
+	
 }
 
 
@@ -585,11 +641,17 @@ function GenerateXBMCButton(name,action)
 	$('#XBMC').append(pnl);
 	pnl =GenerateTextPanel("Title: N/A","title");
 	$('#XBMC').append(pnl);
+	pnl =GenerateTextPanel("Status: N/A","status");
+	$('#XBMC').append(pnl);
+	pnl =GenerateTextPanel("Position: N/A","position");
+	$('#XBMC').append(pnl);
+
+
 
 	
 	}
 	
-	function GetXBMC(command,callback) {
+	function GetXBMC(command,onSuccess,onError) {
 		$.ajax({
 			self:this,
 			type: 'GET',
@@ -599,19 +661,12 @@ function GenerateXBMCButton(name,action)
 			success: function (data) {
 				self.connection = true;
 				DisplayStatus("Status:  Connected");				
-				if (command == "info")
-				{
-					XBMC.info = data;
-					if (data != null)
-					{
-					$("#artist").text("Artist: "+data.result.item.artist);
-					$("#title").text("Title: "+data.result.item.title);
-					}
-					if (callback !=null)
-						callback();
+				XBMC.info = data;
+				if (onSuccess !=null)
+					onSuccess(data);
 
 					
-				}
+				
 				
 			
 			},
@@ -622,6 +677,10 @@ function GenerateXBMCButton(name,action)
 				alert("Connection Error:  Is the Web API controller running at IP ?" + URLXBMC);
 				self.connection = false;
 				};
+				
+					if (onError !=null)
+						onError();
+
 			}
 			})
 			}
