@@ -39,6 +39,7 @@ Tullostech@gmail.com
 	var URL = HOST + "/api/CrestJson";
 	var URLXBMC = HOST +"/api/xbmc/";   //must have trailing slash
 	var XBMCINFOREFRESH = 1000; // how fast the information from xbmc refreshes
+	var TSTAT_REFRESH =1000;//how fast to refresh the thermostats
   
   //client config
   var Collapse = true; // collapse all panels 1 minutes after the last call and other automatic collapsing features.
@@ -52,6 +53,7 @@ Tullostech@gmail.com
         *
         */
 	    var Data = {}
+		Data.thermostats = [{name:"Downstairs",url: "http://192.168.0.16/"},{name: "Upstairs", url: "http://192.168.0.15/"} ]
 	    Data.systempower = { name: "Power Off", id: "15", type: "D", value: "true", slot: "0" };
 	    Data.systemsources = { name: "All", systemsrc: [{ name: "Mute" }, { name: "XBMC" }, { name: "Android" }, { name: "Zune" }, { name: "Shuffler" }] };
 	    Data.Rooms = [];
@@ -66,7 +68,7 @@ Tullostech@gmail.com
 		{ name: "Shuffler", id: "20", type: "D", value: "true", slot: "0", source: "true" },
     {name: "Power Off", id: "9", type: "D", value: "true", slot: "0", source: "false" }]
 	    Room.volume =
-		{ name: "Volume", id: "1", type: "A", max: "45000", min: "0" }
+		{ name: "Volume", id: "1", type: "A", max: "45000", min: "0" , defaultvalue:"22000",  slot: "0" }
 
 	    Data.Rooms.push(Room);
 	    var Room2 = {}
@@ -80,7 +82,7 @@ Tullostech@gmail.com
 		{ name: "Shuffler", id: "45", type: "D", value: "true", slot: "0", source: "true" },
     { name: "Power Off", id: "14", type: "D", value: "true", slot: "0", source: "false" }]
 	    Room2.volume =
-		{ name: "Volume", id: "6", type: "A", max: "45000", min: "0", slot: "0" }
+		{ name: "Volume", id: "6", type: "A", max: "45000", min: "0", defaultvalue:"22000",  slot: "0" }
 	    Data.Rooms.push(Room2);
 	    var Room3 = {}
 	    Room3.name = "Frontyard";
@@ -93,7 +95,7 @@ Tullostech@gmail.com
 		{ name: "Shuffler", id: "30", type: "D", value: "true", slot: "0", source: "true" },
     { name: "Power", id: "11", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room3.volume =
-		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0" }
+		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0", defaultvalue:"34000",  slot: "0" }
 	    Data.Rooms.push(Room3);
 	    var Room4 = {}
 	    Room4.name = "Backyard";
@@ -106,7 +108,7 @@ Tullostech@gmail.com
 		{ name: "Shuffler", id: "25", type: "D", value: "true", slot: "0", source: "true" },
     { name: "Power", id: "10", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room4.volume =
-		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0" }
+		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0", defaultvalue:"30000",  slot: "0" }
 	    Data.Rooms.push(Room4);
 	    var Room5 = {}
 	    Room5.name = "Garage";
@@ -119,7 +121,7 @@ Tullostech@gmail.com
 		{ name: "Shuffler", id: "35", type: "D", value: "true", slot: "0", source: "true" },
     { name: "Power", id: "12", type: "D", value: "true", slot: "0", source: "false" },];
 	    Room5.volume =
-		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" }
+		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" , defaultvalue:"22000",  slot: "0" }
 	    Data.Rooms.push(Room5);
 	    var Room6 = {}
 	    Room6.name = "Bathroom";
@@ -132,7 +134,7 @@ Tullostech@gmail.com
 		{ name: "Shuffler", id: "40", type: "D", value: "true", slot: "0", source: "true" },
     { name: "Power", id: "13", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room6.volume =
-		{ name: "Volume", id: "5", type: "A", max: "45000", min: "0" }
+		{ name: "Volume", id: "5", type: "A", max: "45000", min: "0", defaultvalue:"22000",  slot: "0"  }
 	    Data.Rooms.push(Room6);
 	    /*
         * End of configuration example
@@ -154,10 +156,9 @@ Tullostech@gmail.com
 	function BindVolumeControls(Room) {
 		$('#Volume'+Room.name).on('slidestop', function (event)
 		{
-			defaultval = 0;
 			self = this;
 			var slider_value = $('#Volume' + Room.name).slider().val();
-			Send(Room.volume.id, Room.volume.type, 0, slider_value);
+			Send(Room.volume.id, Room.volume.type, Room.volume.slot, slider_value);
 		});
 	}
 
@@ -181,7 +182,7 @@ Tullostech@gmail.com
 		self = this;
 		self.CrestJsonData = data;
 		// Genarate power for the add power
-		$('#content').append(GenerateUISystemPowerButton(data.systempower.name));
+		//$('#content').append(GenerateUISystemPowerButton(data.systempower.name));
 		//generate UI for party buttons
 		GenerateUIforPartyButton(data.systemsources);
 		//add XBMC UI
@@ -238,7 +239,10 @@ Tullostech@gmail.com
 		return  '<a href="#" data-role="button"  onclick="SendDigital(\'' + roomname + '\',' + id + ')" > ' + buttonname + ' </a>';
 	}
 	function GenerateUISlider(HTMLID, button) {
-		return '<label for="slider1">' + button.name + '<input type="range"  id=' + HTMLID + ' min="0" max=\'' + button.max + '\' value="0" data-popup-enabled="false"   data-theme="d" >';
+		defaultvalue = 0;
+		if (button.defaultvalue != null)
+			defaultvalue = button.defaultvalue;
+		return '<label for="slider1">' + button.name + '<input type="range"  id=' + HTMLID + ' min="0" max=\'' + button.max + '\' value=\'' + defaultvalue + '\' data-popup-enabled="false"   data-theme="d" >';
 	}
 
 	function AddNewRoom(Room) {
@@ -268,6 +272,27 @@ Tullostech@gmail.com
 
 	}
 
+	//loop through the rooms to find the room that contains the  button ID then return the room
+	function GetRoomfromButtonID(ID)
+	{
+		self = this;
+		source = null;
+		
+		//add each room
+		$.each(self.CrestJsonData.Rooms, function (intIndex, Room) {
+		    $.each(Room.srclist, function (index, Button) {		        
+					if (Button.id == ID) {
+						source = Room;
+						return self;
+					}	
+				})
+		});
+		//not found? this would be really wierd
+		return null;
+	}
+
+	
+	
 	function SendDigitalSystemPower()
 	{
 		var Button = this.CrestJsonData.systempower;
@@ -285,7 +310,7 @@ Tullostech@gmail.com
 		}
 		else {
 			Button.value = "true";
-		}
+			 }
 
 		Send(Button.id, Button.type, Button.slot, Button.value);
 		Send(Button.id, Button.type, Button.slot, Button.value);
@@ -335,7 +360,11 @@ Tullostech@gmail.com
 
 		    //its possible for a room not to have the source requested
 			if (source != null)
+			{
+				//lets go ahead and adjust the volume
+				SetRoomVolumetoCurrentValue(Room);
 			    PulseOn(source);
+				}
 		});//end of roomlist foreach loop
 	
 	}
@@ -351,6 +380,17 @@ $("div[data-role='collapsible']").each(function() {
     });
 }
 
+//
+// sends ajax to set the volume of a room to the current room.volume.value
+//
+function SetRoomVolumetoCurrentValue(room)
+{
+	
+	var slider_value = $('#Volume' + room.name).slider().val();
+	Send(room.volume.id, room.volume.type, room.volume.slot, slider_value);
+
+}
+
 
 	//
 	// this function will turn all all source include the one requested to be turned on, then pulse low/high to the requested button
@@ -359,7 +399,7 @@ $("div[data-role='collapsible']").each(function() {
 	{
 		//turn everything off
 		var source;
-		$.each(Room, function (index, Button)
+		$.each(Room.srclist, function (index, Button)
 		{
 			//only turn off the sources in the buttonlist
 			if (Button.source == "true")
@@ -369,7 +409,11 @@ $("div[data-role='collapsible']").each(function() {
 			//find the button that needs to send the command
 			if (Button.id == ID)
 			{
+				//assign the source to be turned on later
 				source =Button;
+				//lets go ahead and adjust the volume
+				SetRoomVolumetoCurrentValue(Room);
+				
 			}
 		})
 		//pulse the source you want to turn on
@@ -386,7 +430,7 @@ $("div[data-role='collapsible']").each(function() {
 			var CurrentRoom = Room;
 			if (RoomName == Room.name)
 			{
-				BroadcastRoomCommand(CurrentRoom.srclist,ID);
+				BroadcastRoomCommand(CurrentRoom,ID);
 			}
 		});
 
@@ -495,6 +539,8 @@ function CreateUI(data)
 		SendPing();
 		//Generate the UI Controls	    
 		GenerateUIforRooms(data);
+		//add UI for tempature controls
+		CreateTempatureUI();
 		//update UI
 		$('#content').trigger("create");
 		//bind the volume sliders
@@ -705,8 +751,94 @@ function GenerateXBMCButton(name,action)
 			}
 	
 
+/*****END of XBMC***/
 
+/***** start of TSTAT****/
+
+
+	function TSTAT(url,command,type,onSuccess,onError,onComplete) {
+		$.ajax({
+			self:this,
+			type: type,
+			url: url + command,
+			dataType: 'json',
+			crossDomain: true,
+			success: function (data) {
+				self.connection = true;
+				DisplayStatus("Status:  Connected");				
+				XBMC.info = data;
+				if (onSuccess !=null)
+					onSuccess(data);				
+			
+			},
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+			    DisplayStatus("Status: Thermostate Connection Error");				
+				if (self.connection != false)
+				{
+				alert("Connection Error:  Is the Thermostat connected ? ");
+				self.connection = false;
+				};
+				
+					if (onError !=null)
+						onError();
+
+			},
+			complete:function()
+			{
+					if (onComplete !=null)
+						onComplete();
+
+			}
+			
+			})
+			}
+
+
+
+		function GetTemp(IPaddress,tstatname,onSuccess)
+		{
+		
+		}
+
+		function updatetempatures()
+		{
+				$.each(self.CrestJsonData.thermostats, function(i,item)
+				{
+				
+				//TSTAT(item.url,"tstat","GET",item.name,UpdateTempatureUI,null,null);
+				TSTAT(item.url,"tstat","GET",UpdateTempatureUI,null,null);
+			    });
 	
+		}
+		
+		function UpdateTempatureUI(name,value)
+		{
+		if (value == null)
+		 {
+		 value = " N/A";
+		 }else
+		 {
+		 value = value +"\u00B0 F"
+		 }
+			$('#'+name).text(name + " sensor : "+ value );
+		}
+		function CreateTempatureUI()
+		{
+		
+		
+		tmpui = GenerateUICollapsable("Tempature")
+		$('#content').append(tmpui);
+		//list tempatures
+			$.each(self.CrestJsonData.thermostats, function(i,item)
+				{
+				pnl =GenerateTextPanel(item.name + " sensor :  Loading..",item.name);
+				$('#Tempature').append(pnl);
+				}
+			);
+		
+		//updatetempatures();
+		}
+		
 
   </script>
 <style type="text/css">
@@ -719,10 +851,16 @@ display : none !important;
   <body>
 <!-- Home -->
 <div data-role="page" id="page1">
-	<div id="Header" data-theme="a" data-role="header">
-				<h4>
-				Welcome:
-				</h4>
+	<div id="Header" data-theme="a" data-role="header" data-position="fixed">
+		<a data-role="button" href="#" data-icon="home" data-iconpos="left" onclick="SendPartySrc('Mute')" class="ui-btn-left">
+            Mute
+        </a>
+        <h3>
+            Crestjon 0.0
+        </h3>
+        <a data-role="button" data-transition="flip" href="#" data-icon="delete" onclick="SendDigitalSystemPower()" data-iconpos="left" class="ui-btn-right">
+            Off
+        </a>
 	</div>
 	
 	<div data-role="content" id ="content">
