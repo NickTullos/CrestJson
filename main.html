@@ -34,8 +34,8 @@ Tullostech@gmail.com
 
 <script>
 	//Proxy server configuration, this proxy should be switch to directly connecting with Crestron control system..
-	var HOST = "http://localhost:8080";
-	//var HOST = "http://192.168.0.12:8080";
+	//var HOST = "http://localhost:8080";
+	var HOST = "http://192.168.0.12:8080";
 	var URL = HOST + "/api/CrestJson";
 	var URLXBMC = HOST +"/api/xbmc/";   //must have trailing slash
 	var URLTHERMO = HOST +"/api/Thermostat/"
@@ -1017,11 +1017,13 @@ function GenerateThermoUIToggleButton(togID)
 		tog="off"
 		}
 		}
-		
+
 		$('#Thermo' + idname).slider().val(val);
 		$('#Thermo' + idname).slider("refresh");
 		$('#tog' + idname).slider().val(tog);
 		$('#tog' + idname).slider("refresh");
+
+		UpdateTempatureUI('#Thermopanel' + idname,val);	
 		
 		
 		}		
@@ -1056,7 +1058,7 @@ function GenerateThermoUIToggleButton(togID)
 				 //add slider to the tempature collapsable
 				 $('#'+idname).append(slider);
 				 //update temapture value
-				 UpdateTempatureUI('#Thermopanel' + idname,defaultvalue)				 
+				 $('#Thermopanel'+idname).text("Loading...");
 				 btn = GenerateThermoUIDigalButton("Thermo"+idname,"Set");
 				  $('#'+idname).append(btn);
 				  
