@@ -34,10 +34,12 @@ Tullostech@gmail.com
 
 <script>
 	//Proxy server configuration, this proxy should be switch to directly connecting with Crestron control system..
-	//var HOST = "http://localhost:8080";
-	var HOST = "http://192.168.0.12:8080";
+	var HOST = "http://localhost:8080";
+	//var HOST = "http://192.168.0.12:8080";
 	var URL = HOST + "/api/CrestJson";
 	var URLXBMC = HOST +"/api/xbmc/";   //must have trailing slash
+	var URLTHERMO = HOST +"/api/Thermostat/"
+	var URLTHERMOP = HOST +"/api/Thermostat"
 	var XBMCINFOREFRESH = 1000; // how fast the information from xbmc refreshes
 	var TSTAT_REFRESH =1000;//how fast to refresh the thermostats
 	var TSTAT_MIN = 65;// coldest
@@ -54,11 +56,12 @@ Tullostech@gmail.com
         *  Configure rooms below
         *
         */
-	    var Data = {}
-		Data.thermostats = [{name:"Main",url: "http://192.168.0.16/"},{name: "2nd Floor", url: "http://192.168.0.15/"} ]
-	    Data.systempower = { name: "Power Off", id: "15", type: "D", value: "true", slot: "0" };
-	    Data.systemsources = { name: "All", systemsrc: [{ name: "Mute" }, { name: "XBMC" }, { name: "Android" }, { name: "Zune" }, { name: "Shuffler" }] };
-	    Data.Rooms = [];
+		self = this;
+	    self.Data = {}
+		self.Data.thermostats = [{name:"Main",url: "http://192.168.0.16/",proxyid :"Thermomainfloor"},{name: "2nd Floor", url: "http://192.168.0.15/", proxyid : "Thermo2ndfloor"} ]
+	    self.Data.systempower = { name: "Power Off", id: "15", type: "D", value: "true", slot: "0" };
+	    self.Data.systemsources = { name: "All", systemsrc: [{ name: "Mute" }, { name: "XBMC" }, { name: "Android" }, { name: "Zune" }, { name: "Shuffler" }] };
+	    self.Data.Rooms = [];
 	    var Room = {}
 	    Room.name = "Kitchen";
 	    Room.srclist =
@@ -72,7 +75,7 @@ Tullostech@gmail.com
 	    Room.volume =
 		{ name: "Volume", id: "1", type: "A", max: "45000", min: "0" , defaultvalue:"22000",  slot: "0" }
 
-	    Data.Rooms.push(Room);
+	    self.Data.Rooms.push(Room);
 	    var Room2 = {}
 	    Room2.name = "Library";
 	    Room2.srclist = 
@@ -85,7 +88,7 @@ Tullostech@gmail.com
     { name: "Power Off", id: "14", type: "D", value: "true", slot: "0", source: "false" }]
 	    Room2.volume =
 		{ name: "Volume", id: "6", type: "A", max: "45000", min: "0", defaultvalue:"22000",  slot: "0" }
-	    Data.Rooms.push(Room2);
+	    self.Data.Rooms.push(Room2);
 	    var Room3 = {}
 	    Room3.name = "Frontyard";
 	    Room3.srclist = 
@@ -98,7 +101,7 @@ Tullostech@gmail.com
     { name: "Power", id: "11", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room3.volume =
 		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0", defaultvalue:"34000",  slot: "0" }
-	    Data.Rooms.push(Room3);
+	    self.Data.Rooms.push(Room3);
 	    var Room4 = {}
 	    Room4.name = "Backyard";
 	    Room4.srclist = 
@@ -111,7 +114,7 @@ Tullostech@gmail.com
     { name: "Power", id: "10", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room4.volume =
 		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0", defaultvalue:"30000",  slot: "0" }
-	    Data.Rooms.push(Room4);
+	    self.Data.Rooms.push(Room4);
 	    var Room5 = {}
 	    Room5.name = "Garage";
 	    Room5.srclist = 
@@ -124,7 +127,7 @@ Tullostech@gmail.com
     { name: "Power", id: "12", type: "D", value: "true", slot: "0", source: "false" },];
 	    Room5.volume =
 		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" , defaultvalue:"22000",  slot: "0" }
-	    Data.Rooms.push(Room5);
+	    self.Data.Rooms.push(Room5);
 	    var Room6 = {}
 	    Room6.name = "Bathroom";
 	    Room6.srclist = 
@@ -137,13 +140,13 @@ Tullostech@gmail.com
     { name: "Power", id: "13", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room6.volume =
 		{ name: "Volume", id: "5", type: "A", max: "45000", min: "0", defaultvalue:"22000",  slot: "0"  }
-	    Data.Rooms.push(Room6);
+	    self.Data.Rooms.push(Room6);
 	    /*
         * End of configuration example
         */
 
 	    //create the UI from the Mock data
-	    CreateUI(Data);
+	    CreateUI(self.Data);
 
 	});
 
@@ -233,7 +236,7 @@ Tullostech@gmail.com
 
 	function GenerateUICollapsable(name,id)
 	{
-		return '<div data-role="collapsible" data-theme="b"  data-collapsed="true" id = "' + id + '"><h3> ' + name + ' </h3><span></span></div>';
+		return '<div data-role="collapsible" data-theme="b"  data-collapsed="true" id = "' + id + '"><h3 id = "clbl' + id + '"> ' + name + ' </h3><h3 id = "clbl1' + id + '"> </h3><span></span></div>';
 	}
 
 	function GenerateUIDigalButton(roomname,id,buttonname)
@@ -737,10 +740,6 @@ function GenerateXBMCButton(name,action)
 				if (onSuccess !=null)
 					onSuccess(data);
 
-					
-				
-				
-			
 			},
 			error: function (XMLHttpRequest, textStatus, errorThrown) {
 			    DisplayStatus("Status: XBMC Connection Error");				
@@ -769,13 +768,22 @@ function GenerateXBMCButton(name,action)
 
 /***** start of TSTAT****/
 
-function GenerateThermoUIDigalButton(sliderID,id,buttonname)
+function GenerateThermoUIDigalButton(sliderID,buttonname)
 	{
 		return  '<a href="#" data-role="button"  onclick="SendTemp(\'' + sliderID + '\')" > ' + buttonname + ' </a>';
 	}
 
+function GenerateThermoUIToggleButton(togID)
+	{
+		return  '<select name="toggleswitch1" id=tog' + togID + ' data-theme="" data-role="slider"> <option value="off">Cool</option><option value="on">Heat </option></select>';
+	}
+	
+	
+
+
 	function SendTemp(sliderID)
 	{
+	
 	$.each(self.CrestJsonData.thermostats, function (i, item) 
 	{
 		idname = UpdateIDtoRemoveSpaces(item.name);
@@ -783,36 +791,44 @@ function GenerateThermoUIDigalButton(sliderID,id,buttonname)
 		{
 		//found match
 		value = $('#Thermo' + idname).slider().val();
-		posttempature(item,value);
+		tog = $('#tog' + idname).slider().val();
+		if (tog == "on")
+		tmode = "1" //toggle on for heat
+		else
+		tmode = "2";//toggle off for ac
+		
+		hold = "1";//set to hold for right now;
+		
+		posttempature(item,value,tmode,hold);
 		
 		}
 	})
 	}
-	
-	
-	
-	function ThermostatAjax(url,data,command,type,onSuccess,onError,onComplete) {
+
+
+	function ThermostatAjax(proxyID,nameid,data,Type,contenttype,onSuccess,onError,onComplete) {
 		$.ajax({
 			self:this,
-			type: type,
-			url: url + command,
-			data: data,
-			contentType: "application/json",
+			type: Type,
+			url: URLTHERMO+proxyID,
 			dataType: 'json',
+			contentType: contenttype,//'application/json',
+			data:data,
 			crossDomain: true,
+			nameid: nameid,
 			success: function (data) {
 				self.connection = true;
 				DisplayStatus("Status:  Connected");				
-				XBMC.info = data;
+//				XBMC.info = data;
 				if (onSuccess !=null)
-					onSuccess(data);				
-			
+					onSuccess(data,nameid);
+
 			},
 			error: function (XMLHttpRequest, textStatus, errorThrown) {
-			    DisplayStatus("Status: Thermostat Connection Error");				
+			    DisplayStatus("Status: Thermostat Error");				
 				if (self.connection != false)
 				{
-				alert("Connection Error:  Is the Thermostat connected ? ");
+				alert("Connection Error:  Is the Thermostat connected ?" + nameid);
 				self.connection = false;
 				};
 				
@@ -829,15 +845,13 @@ function GenerateThermoUIDigalButton(sliderID,id,buttonname)
 			
 			})
 			}
-
-			
+	
 			
 	function BindTempControlItem(item) {
 		idname = UpdateIDtoRemoveSpaces(item.name);
 	
 		$('#Thermo'+idname).on('slidestop', function (event)
 		{
-			self = this;
 			idname = UpdateIDtoRemoveSpaces(item.name)
 			var slider_value = $('#Thermo' + idname).slider().val();
 			UpdateTempatureUI('#Thermopanel' + idname,slider_value);
@@ -857,20 +871,20 @@ function GenerateThermoUIDigalButton(sliderID,id,buttonname)
 	}
 	
 
+	
 
 		function updatetempatures()
 		{
 				$.each(self.CrestJsonData.thermostats, function(i,item)
 				{
-				//TSTAT(item.url,"tstat","GET",item.name,UpdateTempatureUI,null,null);				
-				ThermostatAjax(item.url,"tstat","GET",UpdateTempatureUI,null);
+				ThermostatAjax(item.proxyid,item.name,null,'GET',"",UpdateTempatureUIviaData);
 			    });
 	
 		}
 		
 		       
 		
-		function overridetempSuccess()
+		function overridetempSuccess(a,b)
 		{
 		DisplayStatus("Status: Tempature set");
 		}
@@ -880,17 +894,75 @@ function GenerateThermoUIDigalButton(sliderID,id,buttonname)
 		DisplayStatus("Status: Tempature failure");
 		}
 		
-		function posttempature(item,value)
+
+	function ThermostatPOST(proxyID,data,onSuccess,onError,onComplete) 
+	{
+		
+		 jQuery.ajax({
+    type:'post',
+	dataType: 'json',
+    url: URLTHERMOP,
+    //contentType: 'application/json',
+    data: data,
+	crossDomain: true
+	/*
+				self:this,
+			type: 'POST',
+			url: URL,
+			dataType: 'json',
+			data: data,
+			crossDomain: true,*/
+});
+}
+
+		function posttempature(item,value,tmode,hold)
 		{		
-			//'{"tmode":2,"t_cool":80}'
-			//create data
-			data = {}
-			data.tmode = 2;
-			data.t_cool = value;
+		//set to heat and hold
+		//{"tmode":1,"t_heat":74,"hold":1}
+		//set to cool and dont hold
+		//'{"tmode":2,"t_cool":80}'
+			//create json for proxy to push
+			data = {};
+			data.json = {};
+			if (tmode == "1")
+			{
+			thmode =1;
+			heatcool = '"t_heat" :'+value;
+			}
+			else
+			{
+			thmode =2;
+			heatcool = '"t_cool" :'+value;
+			}
 			
-			ThermostatAjax(item.url,data,"tstat","POST",overridetempSuccess,overridetempFailure);		
+			//the json ojbect uses integer literal  so {"prop":1} not {"prop":"1"}
+			var jobj = '{"tmode" : '+thmode+' , '+heatcool+' , "hold":1 }'
+			//proxy specific varibles
+			data.json = jobj;
+			data.resource = "tstat";
+			data.name = item.proxyid;
+			data.method = "POST";
+			
+			ThermostatPOST(item.proxyid,data);
+			//ThermostatAjax(item.proxyid,"",data,"POST","application/json",overridetempSuccess,overridetempFailure);		
 		}
 		
+		
+		function UpdateTempatureUIviaData(data,idname)
+		{
+
+		$.each(self.CrestJsonData.thermostats, function (i, item) 
+				{
+					//idname = UpdateIDtoRemoveSpaces(item.name);
+					if (idname == (item.name))
+					{
+					settings = "Cooling";
+					if (data.t_heat != null)
+					settings = "Heating";
+					UpdateTempatureCollapseUI(idname,data,settings,true);
+					}
+				})		
+		}
 		function UpdateTempatureUI(name,value)
 		{
 		
@@ -903,6 +975,58 @@ function GenerateThermoUIDigalButton(sliderID,id,buttonname)
 		 }
 			$(name).text("Adjust Temperature: " +value);
 		}
+
+		function UpdateTempatureCollapseUI(name,data,settings,setvalues)
+		{
+		idname = UpdateIDtoRemoveSpaces(name); //unique ID
+		
+		
+		
+		if (data.temp == null)
+		 {
+		 value = " N/A";
+		 }else
+		 {
+		 value = data.temp +"\u00B0 F"
+		 }
+		 
+			
+
+				prettyname = settings+" "+name; //for displaying text
+				txt = prettyname+ " : "+value ;
+				$('#clbl1'+idname).text(txt);
+				//i would like to update the collaspable, but i had jquery mobile issues
+				
+		//set all the values if request
+		if (setvalues == true)
+		{
+		val = $('#Thermo' + idname).slider().val();
+		tog = $('#tog' + idname).slider().val();
+		if (data.tmode =="1")
+		{
+		//heating
+		val = data.t_heat;
+		tog = "on";
+		}
+		else
+		{
+		if (data.tmode =="2")
+		{
+		//cooling
+		val = data.t_cool;
+		tog="off"
+		}
+		}
+		
+		$('#Thermo' + idname).slider().val(val);
+		$('#Thermo' + idname).slider("refresh");
+		$('#tog' + idname).slider().val(tog);
+		$('#tog' + idname).slider("refresh");
+		
+		
+		}		
+				
+		}
 		
 
 		
@@ -913,14 +1037,17 @@ function GenerateThermoUIDigalButton(sliderID,id,buttonname)
 				{
 				prettyname = "Thermostat: "+item.name; //for displaying text
 				idname = UpdateIDtoRemoveSpaces(item.name); //unique ID
-				tmpui = GenerateUICollapsable(prettyname+ " : Loading \u00B0 F" ,idname);
+				tmpui = GenerateUICollapsable(prettyname,idname);//+ " : Loading \u00B0 F" ,idname);
 				$('#content').append(tmpui);
+				tog = GenerateThermoUIToggleButton(idname);
+				 $('#'+idname).append(tog);
+
 				//add slider and post
 				//mock up a button
 				var button = {}
 				button.min = 65;
 				button.max = 85;
-				button.name = prettyname;
+				button.name = "";
 				button.defaultvalue = 78;				
 				//add slider temp panel
 				 pnl =GenerateTextPanel("NA","Thermopanel" +idname);
@@ -930,14 +1057,15 @@ function GenerateThermoUIDigalButton(sliderID,id,buttonname)
 				 $('#'+idname).append(slider);
 				 //update temapture value
 				 UpdateTempatureUI('#Thermopanel' + idname,defaultvalue)				 
-				 
-				 btn = GenerateThermoUIDigalButton("Thermo"+idname,"Set","Set");
+				 btn = GenerateThermoUIDigalButton("Thermo"+idname,"Set");
 				  $('#'+idname).append(btn);
+				  
+				  
 				}
 			);
 		
 		
-		//updatetempatures();
+		updatetempatures();
 		}
 		
 
