@@ -25,7 +25,7 @@ Tullostech@gmail.com
 -->
 
   <head>
-  <title>CrestJson 0.0a 2013/04/10</title>
+  <title>CrestJson Beta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="http://code.jquery.com/mobile/1.3.1/jquery.mobile-1.3.1.min.css" />
 <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
@@ -36,15 +36,17 @@ Tullostech@gmail.com
 	//Proxy server configuration, this proxy should be switch to directly connecting with Crestron control system..
 	//var HOST = "http://localhost:8080";
 	var HOST = "http://192.168.0.12:8080";
+
 	var URL = HOST + "/api/CrestJson";
 	var URLXBMC = HOST +"/api/xbmc/";   //must have trailing slash
 	var URLTHERMO = HOST +"/api/Thermostat/"
 	var URLTHERMOP = HOST +"/api/Thermostat"
-	var XBMCINFOREFRESH = 1000; // how fast the information from xbmc refreshes
-	var TSTAT_REFRESH =1000;//how fast to refresh the thermostats
+	var GENERALTABREFRESH = 5000;  //set to 0 if you do not want updates
+	var XBMCINFOREFRESH = 1500; // how fast the information from xbmc refreshes, set to 0 if you do not want updates
+	var TSTAT_REFRESH =5000;//how fast to refresh the thermostats
 	var TSTAT_MIN = 65;// coldest
 	var TSTAT_MAX = 86;// hotest
-  
+	
   //client config
   var Collapse = true; // collapse all panels 1 minutes after the last call and other automatic collapsing features.
 
@@ -58,12 +60,13 @@ Tullostech@gmail.com
         */
 		self = this;
 	    self.Data = {}
-		self.Data.thermostats = [{name:"Main",url: "http://192.168.0.16/",proxyid :"Thermomainfloor"},{name: "2nd Floor", url: "http://192.168.0.15/", proxyid : "Thermo2ndfloor"} ]
+		self.Data.thermostats = [{name:"Main Floor",url: "http://192.168.0.16/",proxyid :"Thermomainfloor"},{name: "2nd Floor", url: "http://192.168.0.15/", proxyid : "Thermo2ndfloor"} ]
 	    self.Data.systempower = { name: "Power Off", id: "15", type: "D", value: "true", slot: "0" };
 	    self.Data.systemsources = { name: "All", systemsrc: [{ name: "Mute" }, { name: "XBMC" }, { name: "Android" }, { name: "Zune" }, { name: "Shuffler" }] };
 	    self.Data.Rooms = [];
 	    var Room = {}
 	    Room.name = "Kitchen";
+		Room.crestroncontrolsystemname = "Main";
 	    Room.srclist =
 		[
 		{ name: "Mute", id: "3", type: "D", value: "true", slot: "0", source: "false" },
@@ -71,12 +74,13 @@ Tullostech@gmail.com
 		{ name: "Android", id: "18", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "19", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Shuffler", id: "20", type: "D", value: "true", slot: "0", source: "true" },
-    {name: "Power Off", id: "9", type: "D", value: "true", slot: "0", source: "false" }]
+		{name: "Power Off", id: "9", type: "D", value: "true", slot: "0", source: "false" }]
 	    Room.volume =
 		{ name: "Volume", id: "1", type: "A", max: "45000", min: "0" , defaultvalue:"22000",  slot: "0" }
 
 	    self.Data.Rooms.push(Room);
 	    var Room2 = {}
+		Room2.crestroncontrolsystemname = "Main";
 	    Room2.name = "Library";
 	    Room2.srclist = 
 		[
@@ -91,6 +95,7 @@ Tullostech@gmail.com
 	    self.Data.Rooms.push(Room2);
 	    var Room3 = {}
 	    Room3.name = "Frontyard";
+		Room3.crestroncontrolsystemname = "Main";
 	    Room3.srclist = 
 		[
 		{ name: "Mute", id: "5", type: "D", value: "true", slot: "0", source: "false" },
@@ -98,12 +103,13 @@ Tullostech@gmail.com
 		{ name: "Android", id: "28", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "29", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Shuffler", id: "30", type: "D", value: "true", slot: "0", source: "true" },
-    { name: "Power", id: "11", type: "D", value: "true", slot: "0", source: "false" }];
+    { name: "Power Off", id: "11", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room3.volume =
 		{ name: "Volume", id: "3", type: "A", max: "45000", min: "0", defaultvalue:"34000",  slot: "0" }
 	    self.Data.Rooms.push(Room3);
 	    var Room4 = {}
 	    Room4.name = "Backyard";
+		Room4.crestroncontrolsystemname = "Main";
 	    Room4.srclist = 
 		[
 		{ name: "Mute", id: "1", type: "D", value: "true", slot: "0", source: "false" },
@@ -111,12 +117,13 @@ Tullostech@gmail.com
 		{ name: "Android", id: "23", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "24", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Shuffler", id: "25", type: "D", value: "true", slot: "0", source: "true" },
-    { name: "Power", id: "10", type: "D", value: "true", slot: "0", source: "false" }];
+    { name: "Power Off", id: "10", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room4.volume =
 		{ name: "Volume", id: "2", type: "A", max: "45000", min: "0", defaultvalue:"30000",  slot: "0" }
 	    self.Data.Rooms.push(Room4);
 	    var Room5 = {}
 	    Room5.name = "Garage";
+		Room5.crestroncontrolsystemname = "Main";
 	    Room5.srclist = 
 		[
 		{ name: "Mute", id: "6", type: "D", value: "true", slot: "0", source: "false" },
@@ -124,12 +131,13 @@ Tullostech@gmail.com
 		{ name: "Android", id: "33", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "34", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Shuffler", id: "35", type: "D", value: "true", slot: "0", source: "true" },
-    { name: "Power", id: "12", type: "D", value: "true", slot: "0", source: "false" },];
+		{ name: "Power Off", id: "12", type: "D", value: "true", slot: "0", source: "false" },];
 	    Room5.volume =
 		{ name: "Volume", id: "4", type: "A", max: "45000", min: "0" , defaultvalue:"22000",  slot: "0" }
 	    self.Data.Rooms.push(Room5);
 	    var Room6 = {}
 	    Room6.name = "Bathroom";
+		Room6.crestroncontrolsystemname = "Main";
 	    Room6.srclist = 
 		[
 		{ name: "Mute", id: "7", type: "D", value: "true", slot: "0", source: "false" },
@@ -137,7 +145,7 @@ Tullostech@gmail.com
 		{ name: "Android", id: "38", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Zune", id: "39", type: "D", value: "true", slot: "0", source: "true" },
 		{ name: "Shuffler", id: "40", type: "D", value: "true", slot: "0", source: "true" },
-    { name: "Power", id: "13", type: "D", value: "true", slot: "0", source: "false" }];
+    { name: "Power Off", id: "13", type: "D", value: "true", slot: "0", source: "false" }];
 	    Room6.volume =
 		{ name: "Volume", id: "5", type: "A", max: "45000", min: "0", defaultvalue:"22000",  slot: "0"  }
 	    self.Data.Rooms.push(Room6);
@@ -159,11 +167,11 @@ Tullostech@gmail.com
 	$.support.cors = true;
 
 	function BindVolumeControls(Room) {
+		self = this;
 		$('#Volume'+Room.name).on('slidestop', function (event)
 		{
-			self = this;
 			var slider_value = $('#Volume' + Room.name).slider().val();
-			Send(Room.volume.id, Room.volume.type, Room.volume.slot, slider_value);
+			Send(Room.volume.id, Room.volume.type, Room.volume.slot, slider_value,Room.crestroncontrolsystemname);
 		});
 	}
 
@@ -303,47 +311,60 @@ Tullostech@gmail.com
 	
 	function SendDigitalSystemPower()
 	{
-		var Button = this.CrestJsonData.systempower;
-		UpdateDigitaleValue(Button);
+		//var Button = this.CrestJsonData.systempower;
+		//UpdateDigitaleValue(Button);
 	}
 
 	//get previous value and send the opposite
 	//bug this will not turn the system On..
-	function UpdateDigitaleValue(Button)
+	function UpdateDigitaleValue(Button,crestroncontrolsystemname)
 	{
 
 		if (Button.value == "true")
 		{
-			PulseOff(Button);
+			PulseOff(Button,crestroncontrolsystemname);
 		}
 		else {
 			Button.value = "true";
 			 }
 
-		Send(Button.id, Button.type, Button.slot, Button.value);
-		Send(Button.id, Button.type, Button.slot, Button.value);
+		Send(Button.id, Button.type, Button.slot, Button.value,crestroncontrolsystemname);
+		Send(Button.id, Button.type, Button.slot, Button.value,crestroncontrolsystemname);
 	}
 
-	function PulseOff(Button)
+	function PulseOff(Button,crestroncontrolsystemname)
 	{
-		function Pulser(Button)
-		{Send(Button.id,Button.type,"0","true");
-			Send(Button.id,Button.type,"0","false");}
-
-		setTimeout(function(){Pulser(Button)},200);
-		setTimeout(function(){Pulser(Button)},200);
-		setTimeout(function(){Pulser(Button)},0);
+		//Pulser(Button)
+		setTimeout(function(){Pulseroff(Button)},50);
+		setTimeout(function(){Pulseroff(Button)},50);
+		setTimeout(function(){Pulseroff(Button)},50);
+		setTimeout(function(){Pulseroff(Button)},0);
 	}
 
-	function PulseOn(Button)
+	
+	
+	function Pulseroff(Button,controlsystemname)
+		{
+		//Send(Button.id,Button.type,"0","true",controlsystemname);
+		Send(Button.id,Button.type,"0","false",controlsystemname);
+		}
+		
+	function Pulser(Button,controlsystemname)
+		{
+		Send(Button.id,Button.type,"0","false",controlsystemname);
+		Send(Button.id,Button.type,"0","true",controlsystemname);
+		}
+		
+	function PulseOn(Button,controlsystemname)
 	{
-		function Pulser(Button)
-		{Send(Button.id,Button.type,"0","false");
-			Send(Button.id,Button.type,"0","true");}
+		
+		setTimeout(function(){Pulser(Button,controlsystemname)},50);
+		setTimeout(function(){Pulser(Button,controlsystemname)},50);
+		setTimeout(function(){Pulser(Button,controlsystemname)},50);
+		setTimeout(function(){Pulser(Button,controlsystemname)},50);
+		setTimeout(Send(Button.id,Button.type,"0","true",controlsystemname),100);
+		setTimeout(Send(Button.id,Button.type,"0","true",controlsystemname),100);
 
-		setTimeout(function(){Pulser(Button)},200);
-		setTimeout(function(){Pulser(Button)},200);
-		setTimeout(function(){Pulser(Button)},0);
 	}
 	//
 	// this function will is for party mode, it will turn on the same source for all rooms
@@ -360,7 +381,9 @@ Tullostech@gmail.com
 				else {
 					//only turn off ALL the sources in the buttonlist
 					if (Button.source == "true") {
-						Send(Button.id, Button.type, "0", "false");
+						
+						//Send(Button.id, Button.type, "0", "false",Room.crestroncontrolsystemname);
+						PulseOff(Button,crestroncontrolsystemname)
 					}
 				}
 
@@ -371,7 +394,7 @@ Tullostech@gmail.com
 			{
 				//lets go ahead and adjust the volume
 				SetRoomVolumetoCurrentValue(Room);
-			    PulseOn(source);
+			    PulseOn(source,Room.crestroncontrolsystemname);
 				}
 		});//end of roomlist foreach loop
 	
@@ -395,7 +418,7 @@ function SetRoomVolumetoCurrentValue(room)
 {
 	
 	var slider_value = $('#Volume' + room.name).slider().val();
-	Send(room.volume.id, room.volume.type, room.volume.slot, slider_value);
+	Send(room.volume.id, room.volume.type, room.volume.slot, slider_value,room.crestroncontrolsystemname);
 
 }
 
@@ -407,25 +430,27 @@ function SetRoomVolumetoCurrentValue(room)
 	{
 		//turn everything off
 		var source;
+		var controlsystem;
 		$.each(Room.srclist, function (index, Button)
 		{
 			//only turn off the sources in the buttonlist
 			if (Button.source == "true")
 			{
-				Send(Button.id,Button.type,"0","false");
+				Send(Button.id,Button.type,"0","false",Room.crestroncontrolsystemname);
 			}
 			//find the button that needs to send the command
 			if (Button.id == ID)
 			{
 				//assign the source to be turned on later
 				source =Button;
+				controlsystem = Room.crestroncontrolsystemname
 				//lets go ahead and adjust the volume
 				SetRoomVolumetoCurrentValue(Room);
 				
 			}
 		})
 		//pulse the source you want to turn on
-		    PulseOn(source);
+		    PulseOn(source,controlsystem);
 
 	}
 	
@@ -448,12 +473,17 @@ function SetRoomVolumetoCurrentValue(room)
 			}
 		});
 
+		//UpdateUI();
+		AutoRefreshList();
 	}
 	
+	//
 	//checks the status of the server
+	//i dont think we need to do this any longer since we are constantly requesting updates from server
+	//
 	function SendPing()
 	{
-	Send("D", "-1","0", "true");
+	Send("D", "-1","0", "true","Main");
 	}
 	
 	function DisplayStatus(msg)
@@ -462,15 +492,16 @@ function SetRoomVolumetoCurrentValue(room)
 	}
 
 	//build data.. here is an example for analog,digital,serial
-	//{"Type":"A","ID":"6","Slot":"0","Value":"30000"}
-	//{"Type":"D","ID":"6","Slot":"0","Value":"false"}
-	//{"Type":"S","ID":"6","Slot":"0","Value":"nottested????"}
-	function Send(ID, Type, Slot, value) {
+	//{"Type":"A","ID":"6","Slot":"0","Value":"30000","crestroncontrolsystemname":"Main"}
+	//{"Type":"D","ID":"6","Slot":"0","Value":"false","crestroncontrolsystemname":"Main"}
+	//{"Type":"S","ID":"6","Slot":"0","Value":"nottested????","crestroncontrolsystemname":"Main"}
+	function Send(ID, Type, Slot, value,controlsystemname) {
 		var data = {};
 		data.Type = Type;
 		data.ID = ID
 		data.Slot = Slot;
 		data.Value = value;
+		data.crestroncontrolsystemname = controlsystemname;
 		//send call
 		$.ajax({
 			self:this,
@@ -531,26 +562,194 @@ if (this.Collapse == true)
     {
      $collapse.not(this).trigger('collapse');
      $('html, body').animate({
-     scrollTop: $(this).offset().top
+     scrollTop: $(this).offset().top - 50
      });
     });
 }
 }
 
+//
+// this function will currently get all Crestron status from the server
+//
+
+function GetStatus(onSuccess,onError,onComplete) {
+		$.ajax({
+		
+			self:this,
+			type: 'GET',
+			url: URL + "/Main", //this is not implemented properly right now on the server side
+			dataType: 'json',
+			crossDomain: true,
+			success: function (data) {
+
+			DisplayStatus("Status:  Updating");				
+			
+			if (onSuccess !=null)
+					onSuccess(data);
+
+			}
+			
+			})
+			
+			}
+
+			
+			
+	function SearchUpdateforChanges(data)
+	{
+
+		//clear all rooms
+		/*$.each(self.CrestJsonData.Rooms, function (i, room) 
+		{
+			idname = UpdateIDtoRemoveSpaces(room.name);
+			UpdatePanelText(idname, room.name + "off" );
+		})
+*/
+		
+	$.each(data,function(index,item)
+	{
+
+	
+	
+	//we are not guaranteed the item is actually something we are tracking...
+	var found = false;
+	if (item.Type == "D")
+	{
+	
+	//1. see if can find it ID in the rooms
+		$.each(self.CrestJsonData.Rooms, function (i, room) 
+		{
+			$.each(room.srclist,function(i2,source)
+			{
+			//set the sources that are turned on and off
+			if ((source.id == item.ID)&&	(  $.trim(source.name) == "Power Off")  )
+				{
+					idname = UpdateIDtoRemoveSpaces(room.name);
+					if (item.Value == "False"){
+					room.powered = false;
+					UpdatePanelText(idname, room.name );
+					//UpdatePanelText(idname, room.name + " ( Off )");
+					}
+					else
+					{
+					room.powered = true;
+					}
+				}
+				/*
+			if ((source.id == item.ID)&&	(  $.trim(source.name) == "Mute")  )
+			{
+				idname = UpdateIDtoRemoveSpaces(room.name);
+				if ((item.Value == "True") && (room.powered = true ))
+				    {
+					UpdatePanelText(idname, room.name + " ( Mute )");
+					room.powered = false;
+					}
+
+					}*/
 
 
-$(document).delegate('#my-page-id', 'pageinit', function () {
-/*
-  */  
-    });
+			})
+		
+		$.each(room.srclist,function(i2,source)
+			{
+			
+				//We have a match, but we still have to check to see if the power is turned on
+				if ((source.id == item.ID) && (source.source == "true") && (item.Value == "True") )
+				{
+					idname = UpdateIDtoRemoveSpaces(room.name);
+					if (room.powered == true)
+					{
+						UpdatePanelText(idname, room.name + " ( " + source.name+ " )");
+					}
+				
+				}
+				
+				
+				
+				/*
+				if ((source.id == item.ID) && ( item.Value == "True") && (source.source == "false"))
+				{
+				if  ($.trim(source.name) == "Mute")
+					{
+					idname = UpdateIDtoRemoveSpaces(room.name);
+					UpdatePanelText(idname, room.name + " ( Muted )");
+					}
+					if  ($.trim(source.name) == "Power Off")
+					{
+					idname = UpdateIDtoRemoveSpaces(room.name);
+					UpdatePanelText(idname, room.name );
+					}
+
+				}
+*/
+			
+			}
+			)
+			//get out of the loop because we found a match
+			//if (found == true)
+
+		}
+		)
+		
+		//2. update the panel to say what source is playing.
+		
+	}
+	else//analog
+	if (item.Type =="A")
+	{
+		$.each(self.CrestJsonData.Rooms, function (i, room) 
+		{
+		//find the slider and adj the controls to match the server.
+		if (item.ID == room.volume.id)
+			{
+				$('#Volume' + room.name).slider().val(item.Value) ;
+				$('#Volume' + room.name).slider("refresh");
+			}
+
+		})
+	
+	
+	}
+	
+	})
+
+	}
+			
+function UpdatePanels()
+{
+GetStatus(SearchUpdateforChanges);
+
+}
+			
+function AutoRefreshList()
+{
+	//update temperature panel
+	updatetempatures();
+	//update xbmc panel
+	GetPosition();
+	//update room to say the source playing
+	UpdatePanels();
+
+}
+			
+function UpdateUI()
+{
+if (GENERALTABREFRESH != 0)
+	{ 
+	AutoRefreshList()
+	//if (GENERALTABREFRESH < 1000) GENERALTABREFRESH = 1000;
+	
+
+	 setTimeout(function(){UpdateUI();}, GENERALTABREFRESH);
+	 
+	}
+}
 
 function CreateUI(data)
 	{
   
     
    
-		//Lets go ahead and try to connect to the server
-		SendPing();
 		//Generate the UI Controls	    
 		GenerateUIforRooms(data);
 		//add UI for tempature controls
@@ -566,6 +765,7 @@ function CreateUI(data)
     BindAutoCollaspeAndScroll();
     BindAutoCollaspeAndScrollXBMX();
     
+	UpdateUI();
     
 	}
 
@@ -609,9 +809,6 @@ function GetInfo()
 			$("#artist").text("Artist: "+data.result.item.artist);
 			$("#title").text("Title: "+data.result.item.title);
 			}
-		//on success we update again.. once the new timer expires			
-//		 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
-	
 	},//on error callback
 	function()
 	{		$("#artist").text("Artist: N/A");
@@ -628,16 +825,29 @@ function GetPosition()
 	{
 	 	if (data != null)
 			{
-			var status = "Status: Loading";
+			var status = "Status:  Loading";
 			var position = "Position:  Loading";
 			if (data.result != null)
 			{
 			if (data.result.speed == 1)
 			{
+			//Update Panel to say XBMC playing
+			UpdatePanelText("XBMC","XBMX (Playing)");
 			if ($("#status").text() == "Status:  Playing")
+				{
 				status = "Status:  Playing.";
+				
+				}
 				else
+				{
 				status = "Status:  Playing";
+				}
+			}
+			else
+			{
+			status = "Status:  Stopped";
+			//revert collapsible panel to say XBMC
+			UpdatePanelText("XBMC","XBMX");
 			}
 			
 			if (data.result.time != null)
@@ -660,13 +870,17 @@ function GetPosition()
 	function()
 	{
 			//on complete we update again.. once the new timer expires			
-		 setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
+		 //setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
 
 	}
 	); //END of  GetXBMC info call
 
 }
 
+function UpdatePanelText(idname,txtpanel)
+{
+$('#'+idname+' .ui-collapsible-heading .ui-btn .ui-btn-inner .ui-btn-text').text(txtpanel);
+}
 
 function autoupdateinfo()
 {
@@ -675,7 +889,7 @@ if (updatexbmcinfo == true)
 
 GetInfo();
 GetPosition(); // GetPosition function has a timer that will continue getting updates
-	
+setTimeout(function(){autoupdateinfo();}, XBMCINFOREFRESH);
 }
 
 
@@ -801,6 +1015,9 @@ function GenerateThermoUIToggleButton(togID)
 		
 		posttempature(item,value,tmode,hold);
 		
+		updatetempatures();
+		//now request the latest tempature
+		DisplayStatus("Temperature to " +value+ "\u00B0 F");	
 		}
 	})
 	}
@@ -828,7 +1045,7 @@ function GenerateThermoUIToggleButton(togID)
 			    DisplayStatus("Status: Thermostat Error");				
 				if (self.connection != false)
 				{
-				alert("Connection Error:  Is the Thermostat connected ?" + nameid);
+				//alert("Connection Error:  Is the Thermostat connected ?" + nameid);
 				self.connection = false;
 				};
 				
@@ -895,6 +1112,8 @@ function GenerateThermoUIToggleButton(togID)
 		}
 		
 
+		
+		
 	function ThermostatPOST(proxyID,data,onSuccess,onError,onComplete) 
 	{
 		
@@ -922,7 +1141,7 @@ function GenerateThermoUIToggleButton(togID)
 		//set to cool and dont hold
 		//'{"tmode":2,"t_cool":80}'
 			//create json for proxy to push
-			data = {};
+			data = {}; 
 			data.json = {};
 			if (tmode == "1")
 			{
@@ -944,7 +1163,11 @@ function GenerateThermoUIToggleButton(togID)
 			data.method = "POST";
 			
 			ThermostatPOST(item.proxyid,data);
-			//ThermostatAjax(item.proxyid,"",data,"POST","application/json",overridetempSuccess,overridetempFailure);		
+			
+			//request temp update from server to see if it took
+			setTimeout(updatetempatures(),200); // fresh in 3/4 a second
+			setTimeout(updatetempatures(),1000); // fresh in 3/4 a second
+			
 		}
 		
 		
@@ -973,7 +1196,7 @@ function GenerateThermoUIToggleButton(togID)
 		 {
 		 value = value +"\u00B0 F"
 		 }
-			$(name).text("Adjust Temperature: " +value);
+			$(name).text("Target Temperature: " +value);
 		}
 
 		function UpdateTempatureCollapseUI(name,data,settings,setvalues)
@@ -985,9 +1208,11 @@ function GenerateThermoUIToggleButton(togID)
 		if (data.temp == null)
 		 {
 		 value = " N/A";
+		 valuesmall = value;
 		 }else
 		 {
 		 value = data.temp +"\u00B0 F"
+		 valuesmall = data.temp +"\u00B0"
 		 }
 		 
 			
@@ -1023,6 +1248,10 @@ function GenerateThermoUIToggleButton(togID)
 		$('#tog' + idname).slider().val(tog);
 		$('#tog' + idname).slider("refresh");
 
+		//update panel
+		txtpanel = name +": "+ valuesmall  + " - " + settings + ": " +val +"\u00B0";
+		UpdatePanelText(idname,txtpanel);
+		
 		UpdateTempatureUI('#Thermopanel' + idname,val);	
 		
 		
@@ -1069,6 +1298,10 @@ function GenerateThermoUIToggleButton(togID)
 		
 		updatetempatures();
 		}
+/**
+End of Thermostat controls
+
+****/
 		
 
   </script>
@@ -1087,7 +1320,7 @@ display : none !important;
             Mute
         </a>
         <h3>
-            Crestjon 0.0
+            Crestjon (Beta)
         </h3>
         <a data-role="button" data-transition="flip" href="#" data-icon="delete" onclick="SendDigitalSystemPower()" data-iconpos="left" class="ui-btn-right">
             Off
